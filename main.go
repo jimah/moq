@@ -26,7 +26,7 @@ func main() {
 	var (
 		outFile = flag.String("out", "", "output file (default stdout)")
 		pkgName = flag.String("pkg", "", "package name (default will infer)")
-		mkTests = flag.Bool("make-tests", false, "make mock tests (default false)")
+		mkTests = flag.Bool("tests", false, "make mock tests (default false)")
 	)
 	flag.Usage = func() {
 		fmt.Println(`moq [flags] destination interface [interface2 [interface3 [...]]]`)

@@ -16,17 +16,15 @@ import (
 
 // Mocker can generate mock structs.
 type Mocker struct {
-	src       string
-	tmpl      *template.Template
-	fset      *token.FileSet
-	pkgs      map[string]*ast.Package
-	pkgName   string
-	mkTests   bool
-	testsTmpl *template.Template
+	src     string
+	tmpl    *template.Template
+	fset    *token.FileSet
+	pkgs    map[string]*ast.Package
+	pkgName string
 }
 
 // New makes a new Mocker for the specified package directory.
-func New(src, packageName string, shouldMakeTests bool) (*Mocker, error) {
+func New(src, packageName string, makeTests bool) (*Mocker, error) {
 	fset := token.NewFileSet()
 	noTestFiles := func(i os.FileInfo) bool {
 		return !strings.HasSuffix(i.Name(), "_test.go")
@@ -47,26 +45,23 @@ func New(src, packageName string, shouldMakeTests bool) (*Mocker, error) {
 	if len(packageName) == 0 {
 		return nil, errors.New("failed to determine package name")
 	}
-	tmpl, err := template.New("moq").Parse(moqTemplate)
-	if err != nil {
-		return nil, err
-	}
 	m := &Mocker{
 		src:     src,
-		tmpl:    tmpl,
 		fset:    fset,
 		pkgs:    pkgs,
 		pkgName: packageName,
 	}
-	if shouldMakeTests {
+	var tmpl *template.Template
+	if makeTests {
 		// only create our tests template if we have specified to
-		testsTmpl, err := template.New("moq_test").Parse(moqTestTemplate)
-		if err != nil {
-			return nil, err
-		}
-		m.mkTests = shouldMakeTests
-		m.testsTmpl = testsTmpl
+		tmpl, err = template.New("moq_test").Parse(moqTestTemplate)
+	} else {
+		tmpl, err = template.New("moq").Parse(moqTemplate)
 	}
+	if err != nil {
+		return nil, err
+	}
+	m.tmpl = tmpl
 	return m, nil
 }
 
@@ -119,15 +114,6 @@ func (m *Mocker) Mock(w io.Writer, name ...string) error {
 	})
 	if err != nil {
 		return err
-	}
-	if m.mkTests {
-		err := m.testsTmpl.Execute(w, tmplData{
-			PackageName: m.pkgName,
-			Objs:        objs,
-		})
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }
