@@ -21,10 +21,11 @@ type Mocker struct {
 	fset    *token.FileSet
 	pkgs    map[string]*ast.Package
 	pkgName string
+	mkTests bool
 }
 
 // New makes a new Mocker for the specified package directory.
-func New(src, packageName string) (*Mocker, error) {
+func New(src, packageName string, shouldMakeTests bool) (*Mocker, error) {
 	fset := token.NewFileSet()
 	noTestFiles := func(i os.FileInfo) bool {
 		return !strings.HasSuffix(i.Name(), "_test.go")
@@ -55,6 +56,7 @@ func New(src, packageName string) (*Mocker, error) {
 		fset:    fset,
 		pkgs:    pkgs,
 		pkgName: packageName,
+		mkTests: shouldMakeTests,
 	}, nil
 }
 

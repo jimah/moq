@@ -9,7 +9,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/matryer/moq/package/moq"
+	// TODO change this back before PR
+	"github.com/jimah/moq/package/moq"
 )
 
 func main() {
@@ -25,6 +26,7 @@ func main() {
 	var (
 		outFile = flag.String("out", "", "output file (default stdout)")
 		pkgName = flag.String("pkg", "", "package name (default will infer)")
+		mkTests = flag.Bool("make-tests", false, "make mock tests (default false)")
 	)
 	flag.Usage = func() {
 		fmt.Println(`moq [flags] destination interface [interface2 [interface3 [...]]]`)
@@ -44,7 +46,7 @@ func main() {
 	if len(*outFile) > 0 {
 		out = &buf
 	}
-	m, err := moq.New(destination, *pkgName)
+	m, err := moq.New(destination, *pkgName, *mkTests)
 	if err != nil {
 		return
 	}
